@@ -1,0 +1,137 @@
+alias: X1C - Light Control
+description: ""
+triggers:
+  - type: not_opened
+    id: closed
+    device_id: <x1c_device_id>
+    entity_id: <x1c_enclosure_door_id>
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  - type: opened
+    id: opened
+    device_id: <x1c_device_id>
+    entity_id: <x1c_enclosure_door_id>
+    domain: binary_sensor
+    trigger: device
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_started
+    trigger: device
+    id: started
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_canceled
+    trigger: device
+    id: canceled
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_finished
+    trigger: device
+    id: finished
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - opened
+        sequence:
+          - type: turn_on
+            device_id: <x1c_device_id>
+            entity_id: <x1c_chamberlight_id>
+            domain: light
+        alias: Open
+      - conditions:
+          - condition: trigger
+            id:
+              - closed
+          - condition: device
+            type: is_on
+            device_id: <x1c_device_id>
+            entity_id: <x1c_chamberlight_id>
+            domain: light
+          - condition: or
+            conditions:
+              - type: is_value
+                condition: device
+                device_id: <x1c_device_id>
+                entity_id: <print_progress_value_id>
+                domain: sensor
+                above: 99
+              - type: is_value
+                condition: device
+                device_id: <x1c_device_id>
+                entity_id: <print_progress_value_id>
+                domain: sensor
+                below: 1
+        sequence:
+          - type: turn_off
+            device_id: <x1c_device_id>
+            entity_id: <x1c_chamberlight_id>
+            domain: light
+      - conditions:
+          - condition: trigger
+            id:
+              - started
+        sequence:
+          - type: turn_on
+            device_id: <x1c_device_id>
+            entity_id: <x1c_chamberlight_id>
+            domain: light
+        alias: Started
+      - conditions:
+          - condition: trigger
+            id:
+              - canceled
+              - finished
+          - condition: device
+            type: is_on
+            device_id: <x1c_device_id>
+            entity_id: <x1c_chamberlight_id>
+            domain: light
+        sequence:
+          - repeat:
+              sequence:
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - choose:
+                    - conditions:
+                        - condition: template
+                          value_template: >-
+                            {{ states('sensor.x1c_nozzle_temperature') | float
+                            > 100 }}
+                      sequence:
+                        - data:
+                            message: Die Temperatur ist höher als 100 Grad!
+                          action: notify.persistent_notification
+                          enabled: false
+                      alias: Is above X Celsius.
+                    - conditions:
+                        - condition: template
+                          value_template: >-
+                            {{ states('sensor.x1c_nozzle_temperature') | float
+                            <= 100 }}
+                      sequence:
+                        - type: turn_off
+                          device_id: <x1c_device_id>
+                          entity_id: <x1c_chamberlight_id>
+                          domain: light
+                      alias: Is below or equal to X Celsius.
+              until:
+                - condition: or
+                  conditions:
+                    - condition: template
+                      value_template: "{{ repeat.index > 300 }}"
+                    - condition: template
+                      value_template: >-
+                        {{ states('sensor.x1c_nozzle_temperature') | float <=
+                        100 }}
+        alias: canceled/finished
+mode: single
