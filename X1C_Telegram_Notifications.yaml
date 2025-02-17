@@ -59,8 +59,8 @@ actions:
         sequence:
           - delay:
               hours: 0
-              minutes: 5
-              seconds: 0
+              minutes: 0
+              seconds: 5
               milliseconds: 0
           - action: telegram_bot.send_message
             metadata: {}
@@ -158,7 +158,7 @@ actions:
               - print_progress
           - alias: if print progress % 10
             condition: template
-            value_template: "{{ states('sensor.x1c_print_progress') | int % 10 == 0 }}"
+            value_template: "{{ states('sensor.x1c_print_progress') | int < 100 and states('sensor.x1c_print_progress') | int % 25 == 0 }}"
         sequence:
           - action: camera.snapshot
             metadata: {}
