@@ -1,0 +1,79 @@
+# Create 4 Counter under Helpers with the name:
+# printer_bambulab_x1c_maintenance_carbonrods
+# printer_bambulab_x1c_maintenance_maindevice
+# printer_bambulab_x1c_maintenance_yzrods
+# 
+
+
+alias: X1C - Maintenance Counter
+description: ""
+triggers:
+  - alias: printer_bambulab_x1c_maintenance_count
+    entity_id:
+      - sensor._x1c_total_usage
+    trigger: state
+conditions:
+  - condition: template
+    value_template: >-
+      {% set t_new = (trigger.to_state.state | default(0) | int) if (trigger |
+      default(None)).to_state is defined else 0 %}
+
+      {% set t_from = (trigger.from_state.state | default(0) | int) if (trigger
+      | default(None)).from_state is defined else 0 %}
+
+      {{ t_new >= t_from }}
+    enabled: true
+actions:
+  - metadata: {}
+    data:
+      value: >
+        {% set old_value =
+        states('counter.printer_bambulab_x1c_maintenance_carbonrods') | int %}
+        {% set new_usage = trigger.to_state.state | int %} {% set old_usage =
+        trigger.from_state.state | int %} {% set diff = (new_usage | int) -
+        (old_usage | int) %} {% set new_value = (old_value | int) + (diff | int)
+        %} {{ new_value }}
+    target:
+      entity_id:
+        - counter.printer_bambulab_x1c_maintenance_carbonrods
+    action: counter.set_value
+  - metadata: {}
+    data:
+      value: >
+        {% set old_value =
+        states('counter.printer_bambulab_x1c_maintenance_maindevice') | int %}
+        {% set new_usage = trigger.to_state.state | int %} {% set old_usage =
+        trigger.from_state.state | int %} {% set diff = (new_usage | int) -
+        (old_usage | int) %} {% set new_value = (old_value | int) + (diff | int)
+        %} {{ new_value }}
+    target:
+      entity_id:
+        - counter.printer_bambulab_x1c_maintenance_maindevice
+    action: counter.set_value
+  - metadata: {}
+    data:
+      value: >
+        {% set old_value =
+        states('counter.printer_bambulab_x1c_maintenance_yzrods') | int %} {%
+        set new_usage = trigger.to_state.state | int %} {% set old_usage =
+        trigger.from_state.state | int %} {% set diff = (new_usage | int) -
+        (old_usage | int) %} {% set new_value = (old_value | int) + (diff | int)
+        %} {{ new_value }}
+    target:
+      entity_id:
+        - counter.printer_bambulab_x1c_maintenance_yzrods
+    action: counter.set_value
+  - metadata: {}
+    data:
+      value: >
+        {% set old_value =
+        states('counter.printer_bambulab_x1c_maintenance_zspindle') | int %}
+        {% set new_usage = trigger.to_state.state | int %} {% set old_usage =
+        trigger.from_state.state | int %} {% set diff = (new_usage | int) -
+        (old_usage | int) %} {% set new_value = (old_value | int) + (diff | int)
+        %} {{ new_value }}
+    target:
+      entity_id:
+        - counter.printer_bambulab_x1c_maintenance_zspindle
+    action: counter.set_value
+mode: single
