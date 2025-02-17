@@ -1,0 +1,183 @@
+alias: X1C - Telegram - Notifications
+description: ""
+triggers:
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_started
+    trigger: device
+    id: print_started
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_finished
+    trigger: device
+    id: print_finished
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_canceled
+    trigger: device
+    id: print_canceled
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_failed
+    trigger: device
+    id: print_failed
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_error
+    trigger: device
+    id: print_error
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_printer_error
+    trigger: device
+    id: hms_error
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_print_error_cleared
+    trigger: device
+    id: print_error_cleared
+  - device_id: <x1c_device_id>
+    domain: bambu_lab
+    type: event_printer_error_cleared
+    trigger: device
+    id: hms_error_cleared
+  - trigger: state
+    entity_id:
+      - sensor.x1c_ams_1_humidity_index
+    id: ams_humidity
+  - trigger: state
+    entity_id:
+      - sensor.x1c_print_progress
+    id: print_progress
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - print_started
+        sequence:
+          - delay:
+              hours: 0
+              minutes: 5
+              seconds: 0
+              milliseconds: 0
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: >-
+                🖨 Print `{{states('sensor.x1c_task_name')}}` started, will
+                take `{{states('sensor.x1c_remaining_time')}}m` and will
+                finish at `{{states('sensor.x1c_end_time')}}`. 🎉
+      - conditions:
+          - condition: trigger
+            id:
+              - print_finished
+        sequence:
+          - action: camera.snapshot
+            metadata: {}
+            data:
+              filename: www/snapshots/x1c_snapshot.jpg
+            target:
+              entity_id: camera.x1c_camera
+          - action: telegram_bot.send_photo
+            data:
+              file: www/snapshots/x1c_snapshot.jpg
+              caption: 🖨 Print `{{states('sensor.x1c_task_name')}}` finished. ✅
+      - conditions:
+          - condition: trigger
+            id:
+              - print_canceled
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 Print canceled. ❌
+      - conditions:
+          - condition: trigger
+            id:
+              - print_failed
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 Print failed. ❌
+      - conditions:
+          - condition: trigger
+            id:
+              - print_error
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 Print error. ❌🚨
+      - conditions:
+          - condition: trigger
+            id:
+              - hms_error
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 HMS error. ❌🚨
+      - conditions:
+          - condition: trigger
+            id:
+              - print_error_cleared
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 Print error cleared. ✅
+      - conditions:
+          - condition: trigger
+            id:
+              - hms_error_cleared
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 HMS error cleared. ✅
+      - conditions:
+          - condition: and
+            conditions:
+              - condition: trigger
+                id:
+                  - ams_humidity
+              - condition: numeric_state
+                entity_id: sensor.x1c_ams_1_humidity_index
+                above: 2
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 AMS humidity too high! 🚨
+      - conditions:
+          - condition: trigger
+            id:
+              - print_progress
+          - alias: if print progress % 10
+            condition: template
+            value_template: "{{ states('sensor.x1c_print_progress') | int % 10 == 0 }}"
+        sequence:
+          - action: camera.snapshot
+            metadata: {}
+            data:
+              filename: www/snapshots/x1c_snapshot.jpg
+            target:
+              entity_id: camera.x1c_camera
+          - action: telegram_bot.send_photo
+            data:
+              file: www/snapshots/x1c_snapshot.jpg
+              caption: >-
+                `Bambu Lab Print Job Status {{"\n"}}` `- File:`
+                `{{states('sensor.x1c_task_name')}}` {{"\n"}} `- Progress:`
+                `{{states('sensor.x1c_print_progress')}}%`{{"\n"}} `-
+                Remaining time:` `{% set minutes =
+                states('sensor.x1c_remaining_time') | int %}{% set days =
+                (minutes // (24 * 60)) %}{% set hours = (minutes %(24 * 60)) //
+                60 %}{% set remaining_minutes = minutes % 60 %}{% if days > 0
+                %}{{days}}d {% endif%}{% if hours > 0 %}{{hours}}h {% endif
+                %}{{remaining_minutes}}m`
+              disable_notification: true
+mode: single
