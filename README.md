@@ -1,3 +1,3 @@
 # bambulab_homeassistant
 
-a small collection of my hHome Assistant files for the Bambu lab X1C
+a small collection of my Home Assistant files for the Bambu lab X1C
