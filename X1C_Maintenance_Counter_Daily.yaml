@@ -1,0 +1,23 @@
+# Create 4 Counter under Helpers with the name:
+# x1c_maintenance_carbonrods_days
+# x1c_maintenance_yzrods_days
+# x1c_maintenance_zspindle_days
+# x1c_maintenance_maindevice_days
+
+alias: X1C - Maintenance - Counter Daily
+description: ""
+triggers:
+  - at: "05:00:00"
+    enabled: true
+    trigger: time
+conditions: []
+actions:
+  - data: {}
+    action: counter.increment
+    target:
+      entity_id:
+        - counter.x1c_maintenance_carbonrods_days
+        - counter.x1c_maintenance_yzrods_days
+        - counter.x1c_maintenance_zspindle_days
+        - counter.x1c_maintenance_maindevice_days
+mode: single
