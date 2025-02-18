@@ -222,11 +222,11 @@ actions:
 
               {{ (hours_valid and
               states('counter.x1c_maintenance_carbonrods_hours') | float(0) >
-              states('input_number.x1c_maintenance_carbonrods_intervall_hours')
+              states('input_number.x1c_maintenance_carbonrods_interval_hours')
               | float(0)) or (days_valid and
               states('counter.x1c_maintenance_carbonrods_days') | float(0) |
               round(0) >
-              states('input_number.x1c_maintenance_carbonrods_intervall_days')
+              states('input_number.x1c_maintenance_carbonrods_interval_days')
               | float(0) | round(0)) }}
         sequence:
           - action: telegram_bot.send_message
@@ -248,11 +248,11 @@ actions:
 
               {{ (hours_valid and
               states('counter.x1c_maintenance_yzrods_hours') | float(0) >
-              states('input_number.x1c_maintenance_yzrods_intervall_hours') |
+              states('input_number.x1c_maintenance_yzrods_interval_hours') |
               float(0)) or (days_valid and
               states('counter.x1c_maintenance_yzrods_days') | float(0) |
               round(0) >
-              states('input_number.x1c_maintenance_yzrods_intervall_days') |
+              states('input_number.x1c_maintenance_yzrods_interval_days') |
               float(0) | round(0)) }}
         sequence:
           - action: telegram_bot.send_message
@@ -274,11 +274,11 @@ actions:
 
               {{ (hours_valid and
               states('counter.x1c_maintenance_zspindle_hours') | float(0) >
-              states('input_number.x1c_maintenance_zspindle_intervall_hours')
+              states('input_number.x1c_maintenance_zspindle_interval_hours')
               | float(0)) or (days_valid and
               states('counter.x1c_maintenance_zspindle_days') | float(0) |
               round(0) >
-              states('input_number.x1c_maintenance_zspindle_intervall_days') |
+              states('input_number.x1c_maintenance_zspindle_interval_days') |
               float(0) | round(0)) }}
         sequence:
           - action: telegram_bot.send_message
@@ -301,11 +301,11 @@ actions:
 
               {{ (hours_valid and
               states('counter.x1c_maintenance_maindevice_hours') | float(0) >
-              states('input_number.x1c_maintenance_maindevice_intervall_hours')
+              states('input_number.x1c_maintenance_maindevice_interval_hours')
               | float(0)) or (days_valid and
               states('counter.x1c_maintenance_maindevice_days') | float(0) |
               round(0) >
-              states('input_number.x1c_maintenance_maindevice_intervall_days')
+              states('input_number.x1c_maintenance_maindevice_interval_days')
               | float(0) | round(0)) }}
         sequence:
           - action: telegram_bot.send_message
