@@ -1,0 +1,47 @@
+type: custom:mushroom-template-card
+primary: X-Axis Carbon Rods
+secondary: >-
+  {% if (states('counter.x1c_maintenance_carbonrods_hours') | float(0) >
+  states('input_number.x1c_maintenance_carbonrods_interval_hours') | float(0))
+  or (states('counter.x1c_maintenance_carbonrods_days') | float(0) | round(0) >
+  states('input_number.x1c_maintenance_carbonrods_interval_days') | float(0) |
+  round(0)) %}
+    CLEANING REQUIRED ({{ states('counter.x1c_maintenance_carbonrods_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_carbonrods_days') | float(0) | round(0) }} days)
+  {% else %}
+    {{ states('counter.x1c_maintenance_carbonrods_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_carbonrods_days') | float(0) | round(0) }} days since last cleaning
+  {% endif %}Reset Timer
+icon: mdi:wrench-clock
+icon_color: >-
+  {% if (states('counter.x1c_maintenance_carbonrods_hours') | float(0) >
+  states('input_number.x1c_maintenance_carbonrods_interval_hours') | float(0))
+  or (states('counter.x1c_maintenance_carbonrods_days') | float(0) | round(0) >
+  states('input_number.x1c_maintenance_carbonrods_interval_days') | float(0) |
+  round(0)) %}
+    red
+  {% else %}
+    green
+  {% endif %}
+multiline_secondary: true
+badge_icon: >-
+  {% if (states('counter.x1c_maintenance_carbonrods_hours') | float(0) >
+  states('input_number.x1c_maintenance_carbonrods_interval_hours') | float(0))
+  or (states('counter.x1c_maintenance_carbonrods_days') | float(0) | round(0) >
+  states('input_number.x1c_maintenance_carbonrods_interval_days') | float(0) |
+  round(0)) %}
+    mdi:alert-circle-outline
+  {% endif %}
+badge_color: blue
+layout: horizontal
+entity: counter.x1c_maintenance_carbonrods_hours
+tap_action:
+  action: call-service
+  service: counter.reset
+  target:
+    entity_id:
+      - counter.x1c_maintenance_carbonrods_hours
+      - counter.x1c_maintenance_carbonrods_days
+  data: {}
+hold_action:
+  action: none
+double_tap_action:
+  action: none
