@@ -66,9 +66,12 @@ actions:
             metadata: {}
             data:
               message: >-
-                🖨 Print `{{states('sensor.x1c_task_name')}}` started, will
-                take `{{states('sensor.x1c_remaining_time')}}m` and will
-                finish at `{{states('sensor.x1c_end_time')}}`. 🎉
+                🖨 Print `{{states('sensor.x1c_1_task_name')}}` started, will take `{% set
+                minutes = states('sensor.x1c_1_remaining_time') | int %}{% set days =
+                (minutes // (24 * 60)) %}{% set hours = (minutes %(24 * 60)) // 60 %}{% set
+                remaining_minutes = minutes % 60 %}{% if days > 0 %}{{days}}d {% endif%}{%
+                if hours > 0 %}{{hours}}h {% endif %}{{remaining_minutes}}m` and will finish
+                at `{{states('sensor.x1c_1_end_time')}}`. 🎉
       - conditions:
           - condition: trigger
             id:
