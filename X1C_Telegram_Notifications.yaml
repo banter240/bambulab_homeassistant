@@ -49,6 +49,26 @@ triggers:
     entity_id:
       - sensor.x1c_print_progress
     id: print_progress
+  - trigger: state
+    entity_id:
+      - counter.x1c_maintenance_carbonrods_days
+      - counter.x1c_maintenance_carbonrods_hours
+    id: maintenance_carbonrods
+  - trigger: state
+    entity_id:
+      - counter.x1c_maintenance_yzrods_days
+      - counter.x1c_maintenance_yzrods_hours
+    id: maintenance_yzrods
+  - trigger: state
+    entity_id:
+      - counter.x1c_maintenance_zspindle_days
+      - counter.x1c_maintenance_zspindle_hours
+    id: maintenance_zspindle
+  - trigger: state
+    entity_id:
+      - counter.x1c_maintenance_carbonrods_days
+      - counter.x1c_maintenance_carbonrods_hours
+    id: maintenance_carbonrods
 conditions: []
 actions:
   - choose:
@@ -66,27 +86,13 @@ actions:
             metadata: {}
             data:
               message: >-
-                🖨 Print `{{states('sensor.x1c_1_task_name')}}` started, will take `{% set
-                minutes = states('sensor.x1c_1_remaining_time') | int %}{% set days =
-                (minutes // (24 * 60)) %}{% set hours = (minutes %(24 * 60)) // 60 %}{% set
-                remaining_minutes = minutes % 60 %}{% if days > 0 %}{{days}}d {% endif%}{%
-                if hours > 0 %}{{hours}}h {% endif %}{{remaining_minutes}}m` and will finish
-                at `{{states('sensor.x1c_1_end_time')}}`. 🎉
-      - conditions:
-          - condition: trigger
-            id:
-              - print_finished
-        sequence:
-          - action: camera.snapshot
-            metadata: {}
-            data:
-              filename: www/snapshots/x1c_snapshot.jpg
-            target:
-              entity_id: camera.x1c_camera
-          - action: telegram_bot.send_photo
-            data:
-              file: www/snapshots/x1c_snapshot.jpg
-              caption: 🖨 Print `{{states('sensor.x1c_task_name')}}` finished. ✅
+                🖨 Print `{{states('sensor.x1c_task_name')}}` started, will
+                take `{% set minutes = states('sensor.x1c_remaining_time') |
+                int %}{% set days = (minutes // (24 * 60)) %}{% set hours =
+                (minutes %(24 * 60)) // 60 %}{% set remaining_minutes = minutes
+                % 60 %}{% if days > 0 %}{{days}}d {% endif%}{% if hours > 0
+                %}{{hours}}h {% endif %}{{remaining_minutes}}m` and will finish
+                at `{{states('sensor.x1c_end_time')}}`. 🎉
       - conditions:
           - condition: trigger
             id:
@@ -159,9 +165,11 @@ actions:
           - condition: trigger
             id:
               - print_progress
-          - alias: if print progress % 10
+          - alias: if print progress % 10 and not 100%
             condition: template
-            value_template: "{{ states('sensor.x1c_print_progress') | int < 100 and states('sensor.x1c_print_progress') | int % 25 == 0 }}"
+            value_template: >-
+              {{ states('sensor.x1c_print_progress') | int < 100 and
+              states('sensor.x1c_print_progress') | int % 25 == 0 }}
         sequence:
           - action: camera.snapshot
             metadata: {}
@@ -171,6 +179,7 @@ actions:
               entity_id: camera.x1c_camera
           - action: telegram_bot.send_photo
             data:
+              disable_notification: true
               file: www/snapshots/x1c_snapshot.jpg
               caption: >-
                 `Bambu Lab Print Job Status {{"\n"}}` `- File:`
@@ -182,5 +191,125 @@ actions:
                 60 %}{% set remaining_minutes = minutes % 60 %}{% if days > 0
                 %}{{days}}d {% endif%}{% if hours > 0 %}{{hours}}h {% endif
                 %}{{remaining_minutes}}m`
-              disable_notification: true
+      - conditions:
+          - condition: trigger
+            id:
+              - print_finished
+        sequence:
+          - action: camera.snapshot
+            metadata: {}
+            data:
+              filename: www/snapshots/x1c_snapshot.jpg
+            target:
+              entity_id: camera.x1c_camera
+          - action: telegram_bot.send_photo
+            data:
+              file: www/snapshots/x1c_snapshot.jpg
+              caption: 🖨 Print `{{states('sensor.x1c_task_name')}}` finished. ✅
+      - conditions:
+          - condition: trigger
+            id:
+              - maintenance_carbonrods
+          - condition: template
+            value_template: >-
+              {% set hours_valid =
+              states('counter.x1c_maintenance_carbonrods_hours') | is_number
+              %}
+
+              {% set days_valid =
+              states('counter.x1c_maintenance_carbonrods_days') | is_number %}
+
+
+              {{ (hours_valid and
+              states('counter.x1c_maintenance_carbonrods_hours') | float(0) >
+              states('input_number.x1c_maintenance_carbonrods_intervall_hours')
+              | float(0)) or (days_valid and
+              states('counter.x1c_maintenance_carbonrods_days') | float(0) |
+              round(0) >
+              states('input_number.x1c_maintenance_carbonrods_intervall_days')
+              | float(0) | round(0)) }}
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 Maintenance of the carbonrods required!
+      - conditions:
+          - condition: trigger
+            id:
+              - maintenance_yzrods
+          - condition: template
+            value_template: >-
+              {% set hours_valid =
+              states('counter.x1c_maintenance_yzrods_hours') | is_number %}
+
+              {% set days_valid =
+              states('counter.x1c_maintenance_yzrods_days') | is_number %}
+
+
+              {{ (hours_valid and
+              states('counter.x1c_maintenance_yzrods_hours') | float(0) >
+              states('input_number.x1c_maintenance_yzrods_intervall_hours') |
+              float(0)) or (days_valid and
+              states('counter.x1c_maintenance_yzrods_days') | float(0) |
+              round(0) >
+              states('input_number.x1c_maintenance_yzrods_intervall_days') |
+              float(0) | round(0)) }}
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 Maintenance of the y- and z-rods required!
+      - conditions:
+          - condition: trigger
+            id:
+              - maintenance_zspindle
+          - condition: template
+            value_template: >-
+              {% set hours_valid =
+              states('counter.x1c_maintenance_zspindle_hours') | is_number %}
+
+              {% set days_valid =
+              states('counter.x1c_maintenance_zspindle_days') | is_number %}
+
+
+              {{ (hours_valid and
+              states('counter.x1c_maintenance_zspindle_hours') | float(0) >
+              states('input_number.x1c_maintenance_zspindle_intervall_hours')
+              | float(0)) or (days_valid and
+              states('counter.x1c_maintenance_zspindle_days') | float(0) |
+              round(0) >
+              states('input_number.x1c_maintenance_zspindle_intervall_days') |
+              float(0) | round(0)) }}
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 Maintenance of the z-spindle required!
+      - conditions:
+          - condition: trigger
+            id:
+              - maintenance_maindevice
+          - condition: template
+            value_template: >-
+              {% set hours_valid =
+              states('counter.x1c_maintenance_maindevice_hours') | is_number
+              %}
+
+              {% set days_valid =
+              states('counter.x1c_maintenance_maindevice_days') | is_number %}
+
+
+              {{ (hours_valid and
+              states('counter.x1c_maintenance_maindevice_hours') | float(0) >
+              states('input_number.x1c_maintenance_maindevice_intervall_hours')
+              | float(0)) or (days_valid and
+              states('counter.x1c_maintenance_maindevice_days') | float(0) |
+              round(0) >
+              states('input_number.x1c_maintenance_maindevice_intervall_days')
+              | float(0) | round(0)) }}
+        sequence:
+          - action: telegram_bot.send_message
+            metadata: {}
+            data:
+              message: 🖨 Maintenance of the maindevice required!
 mode: single
