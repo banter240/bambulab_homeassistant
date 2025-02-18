@@ -1,0 +1,23 @@
+# Create the following Helpers with the name:
+
+#Counter:
+#just counters for the automations
+counter.x1c_maintenance_carbonrods_days
+counter.x1c_maintenance_yzrods_days
+counter.x1c_maintenance_zspindle_days
+counter.x1c_maintenance_maindevice_days
+counter.x1c_maintenance_carbonrods_hours
+counter.x1c_maintenance_yzrods_hours
+counter.x1c_maintenance_zspindle_hours
+counter.x1c_maintenance_maindevice_hours
+
+#Number:
+#put in the interval you want to have for each of the parts
+input_number.x1c_1_maintenance_carbonrods_interval_hours
+input_number.x1c_1_maintenance_carbonrods_interval_days
+input_number.x1c_1_maintenance_yzrods_interval_hours
+input_number.x1c_1_maintenance_yzrods_interval_days
+input_number.x1c_1_maintenance_zspindle_interval_hours
+input_number.x1c_1_maintenance_zspindle_interval_days
+input_number.x1c_1_maintenance_maindevice_interval_hours
+input_number.x1c_1_maintenance_maindevice_interval_days
