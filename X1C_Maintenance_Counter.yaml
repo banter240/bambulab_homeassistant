@@ -1,0 +1,101 @@
+alias: X1C - Maintenance - Counter
+description: ""
+triggers:
+  - alias: x1c_maintenance_hours_count
+    entity_id:
+      - sensor.x1c_total_usage
+    trigger: state
+    id: total_usage
+  - trigger: time
+    at: "05:00:00"
+    enabled: true
+    id: counter_daily
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: and
+            conditions:
+              - condition: trigger
+                id:
+                  - total_usage
+              - condition: template
+                value_template: >-
+                  {% set t_new = (trigger.to_state.state | default(0) | int) if
+                  (trigger | default(None)).to_state is defined else 0 %}
+
+                  {% set t_from = (trigger.from_state.state | default(0) | int)
+                  if (trigger | default(None)).from_state is defined else 0 %}
+
+                  {{ t_new >= t_from }}
+        sequence:
+          - metadata: {}
+            data:
+              value: >
+                {% set old_value =
+                states('counter.x1c_maintenance_carbonrods_hours') | int %} {%
+                set new_usage = trigger.to_state.state | int %} {% set old_usage
+                = trigger.from_state.state | int %} {% set diff = (new_usage |
+                int) - (old_usage | int) %} {% set new_value = (old_value | int)
+                + (diff | int) %} {{ new_value }}
+            target:
+              entity_id:
+                - counter.x1c_maintenance_carbonrods_hours
+            action: counter.set_value
+          - metadata: {}
+            data:
+              value: >
+                {% set old_value =
+                states('counter.x1c_maintenance_yzrods_hours') | int %} {% set
+                new_usage = trigger.to_state.state | int %} {% set old_usage =
+                trigger.from_state.state | int %} {% set diff = (new_usage |
+                int) - (old_usage | int) %} {% set new_value = (old_value | int)
+                + (diff | int) %} {{ new_value }}
+            target:
+              entity_id:
+                - counter.x1c_maintenance_yzrods_hours
+            action: counter.set_value
+          - metadata: {}
+            data:
+              value: >
+                {% set old_value =
+                states('counter.x1c_maintenance_zspindle_hours') | int %} {%
+                set new_usage = trigger.to_state.state | int %} {% set old_usage
+                = trigger.from_state.state | int %} {% set diff = (new_usage |
+                int) - (old_usage | int) %} {% set new_value = (old_value | int)
+                + (diff | int) %} {{ new_value }}
+            target:
+              entity_id:
+                - counter.x1c_maintenance_zspindle_hours
+            action: counter.set_value
+          - metadata: {}
+            data:
+              value: >
+                {% set old_value =
+                states('counter.x1c_maintenance_maindevice_hours') | int %} {%
+                set new_usage = trigger.to_state.state | int %} {% set old_usage
+                = trigger.from_state.state | int %} {% set diff = (new_usage |
+                int) - (old_usage | int) %} {% set new_value = (old_value | int)
+                + (diff | int) %} {{ new_value }}
+            target:
+              entity_id:
+                - counter.x1c_maintenance_maindevice_hours
+            action: counter.set_value
+        alias: Counter usage hours
+      - conditions:
+          - condition: trigger
+            id:
+              - counter_daily
+        sequence:
+          - data: {}
+            action: counter.increment
+            target:
+              entity_id:
+                - counter.x1c_maintenance_carbonrods_days
+                - counter.x1c_maintenance_yzrods_days
+                - counter.x1c_maintenance_zspindle_days
+                - counter.x1c_maintenance_maindevice_days
+            alias: Increment Daily counter
+        alias: Counter days
+mode: queued
+max: 10
