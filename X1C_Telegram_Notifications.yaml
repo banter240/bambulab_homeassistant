@@ -312,4 +312,5 @@ actions:
             metadata: {}
             data:
               message: 🖨 Maintenance of the maindevice required!
-mode: single
+mode: queued
+max: 10
