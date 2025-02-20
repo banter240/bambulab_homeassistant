@@ -168,8 +168,9 @@ actions:
           - alias: if print progress % 10 and not 100%
             condition: template
             value_template: >-
-              {{ states('sensor.x1c_print_progress') | int < 100 and
-              states('sensor.x1c_print_progress') | int % 25 == 0 }}
+              {{ states('sensor.x1c_1_print_progress') | int > 0 and
+              states('sensor.x1c_1_print_progress') | int < 100 and
+              states('sensor.x1c_1_print_progress') | int % 25 == 0 }}
         sequence:
           - action: camera.snapshot
             metadata: {}
