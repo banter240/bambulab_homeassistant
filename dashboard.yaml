@@ -1,0 +1,1750 @@
+Code based on https://github.com/Stone-Time/HomeAssistant-BambuLab-DashBoard/tree/main please follow the instructions there and copy pase mine if his was setup. I changed a lot of the maintenance view.
+
+title: BambuLab Printer
+path: bambulab-printer
+cards: []
+type: sections
+max_columns: 4
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: Job
+      - type: custom:mushroom-title-card
+        title: Datei
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: conditional
+        conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state_not: "on"
+              - condition: state
+                entity: binary_sensor.x1c_online
+                state_not: "on"
+        card:
+          type: custom:mushroom-template-card
+          primary: Drucker ist ausgeschaltet
+          secondary: ""
+          icon: ""
+          layout: horizontal
+          tap_action:
+            action: none
+          hold_action:
+            action: none
+          double_tap_action:
+            action: none
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unavailable
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unknown
+        card:
+          type: vertical-stack
+          cards:
+            - type: conditional
+              conditions:
+                - condition: or
+                  conditions:
+                    - condition: state
+                      entity: sensor.x1c_task_name
+                      state: unavailable
+                    - condition: state
+                      entity: sensor.x1c_task_name
+                      state: unknown
+              card:
+                type: custom:mushroom-template-card
+                primary: Aktuell kein laufender Job
+                secondary: ""
+                icon: mdi:file-clock-outline
+                layout: horizontal
+                tap_action:
+                  action: none
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: sensor.x1c_task_name
+                  state_not: unavailable
+                - condition: state
+                  entity: sensor.x1c_task_name
+                  state_not: unknown
+              card:
+                type: custom:mushroom-entity-card
+                entity: sensor.x1c_task_name
+                icon: mdi:file-clock-outline
+                name: Aufgabe
+                layout: horizontal
+            - type: horizontal-stack
+              cards:
+                - type: custom:mushroom-entity-card
+                  entity: sensor.x1c_print_length
+                  name: Drucklänge
+                - type: custom:mushroom-entity-card
+                  entity: sensor.x1c_print_weight
+                  name: Druckgewicht
+            - type: horizontal-stack
+              cards:
+                - show_state: false
+                  show_name: false
+                  camera_view: live
+                  type: picture-entity
+                  camera_image: camera.x1c_camera
+                  entity: camera.x1c_camera
+                  theme: Mushroom Square
+                  name: BambuLab X1C Alpha
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 8em !important;
+                        overflow: hidden;
+                      }
+                - type: picture
+                  image_entity: image.x1c_cover_image
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 8em !important;
+                        overflow: hidden;
+                        text-align: center;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        img {
+                          margin: auto;
+                          display: block;
+                          position: absolute;
+                        }
+                      }
+      - type: custom:mushroom-title-card
+        title: Prozess
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: conditional
+        conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state_not: "on"
+              - condition: state
+                entity: binary_sensor.x1c_online
+                state_not: "on"
+        card:
+          type: custom:mushroom-template-card
+          primary: Drucker ist ausgeschaltet
+          secondary: ""
+          icon: ""
+          layout: horizontal
+          tap_action:
+            action: none
+          hold_action:
+            action: none
+          double_tap_action:
+            action: none
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unavailable
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unknown
+        card:
+          type: vertical-stack
+          cards:
+            - type: horizontal-stack
+              cards:
+                - type: custom:mushroom-entity-card
+                  entity: sensor.x1c_print_status
+                  name: Druckstatus
+                  icon: mdi:format-list-checks
+                - type: custom:mushroom-template-card
+                  primary: Schichten
+                  icon_color: var(--rgb-state-entity)
+                  secondary: >-
+                    {{states('sensor.x1c_current_layer')}} /
+                    {{states('sensor.x1c_total_layer_count')}}
+                  icon: mdi:layers
+            - type: horizontal-stack
+              cards:
+                - type: conditional
+                  conditions:
+                    - condition: state
+                      entity: sensor.x1c_start_time
+                      state_not: unavailable
+                    - condition: state
+                      entity: sensor.x1c_start_time
+                      state_not: unknown
+                  card:
+                    type: custom:mushroom-entity-card
+                    entity: sensor.x1c_start_time
+                    name: Startzeit
+                    icon: mdi:clock-start
+                - type: conditional
+                  conditions:
+                    - condition: state
+                      entity: sensor.x1c_end_time
+                      state_not: unavailable
+                    - condition: state
+                      entity: sensor.x1c_end_time
+                      state_not: unknown
+                  card:
+                    type: custom:mushroom-entity-card
+                    entity: sensor.x1c_end_time
+                    name: Fertigstellung
+                    icon: mdi:timer-check-outline
+            - type: horizontal-stack
+              cards:
+                - type: conditional
+                  conditions:
+                    - condition: state
+                      entity: sensor.x1c_end_time
+                      state_not: unavailable
+                    - condition: state
+                      entity: sensor.x1c_end_time
+                      state_not: unknown
+                  card:
+                    type: custom:mushroom-entity-card
+                    entity: sensor.x1c_remaining_time
+                    name: Verbleibende Zeit
+                    icon: mdi:timer-check-outline
+            - type: gauge
+              entity: sensor.x1c_print_progress
+              name: Druckfortschritt
+      - type: custom:mushroom-title-card
+        title: Wartung
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: custom:mushroom-template-card
+        primary: X-Achse Carbon Stangen
+        secondary: >-
+          {% if (states('counter.x1c_maintenance_carbonrods_hours') | float(0)
+          > states('input_number.x1c_maintenance_carbonrods_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_carbonrods_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_carbonrods_interval_days') |
+          float(0) | round(0)) %}
+            REINIGUNG ERFORDERLICH ({{ states('counter.x1c_maintenance_carbonrods_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_carbonrods_days') | float(0) | round(0) }} Tage)
+          {% else %}
+            {{ states('counter.x1c_maintenance_carbonrods_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_carbonrods_days') | float(0) | round(0) }} Tage seit letzter Reinigung
+          {% endif %}Timer zurücksetzen
+        icon: mdi:wrench-clock
+        icon_color: >-
+          {% if (states('counter.x1c_maintenance_carbonrods_hours') | float(0)
+          > states('input_number.x1c_maintenance_carbonrods_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_carbonrods_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_carbonrods_interval_days') |
+          float(0) | round(0)) %}
+            red
+          {% else %}
+            green
+          {% endif %}
+        multiline_secondary: true
+        badge_icon: >-
+          {% if (states('counter.x1c_maintenance_carbonrods_hours') | float(0)
+          > states('input_number.x1c_maintenance_carbonrods_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_carbonrods_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_carbonrods_interval_days') |
+          float(0) | round(0)) %}
+            mdi:alert-circle-outline
+          {% endif %}
+        badge_color: blue
+        layout: horizontal
+        entity: counter.x1c_maintenance_carbonrods_hours
+        tap_action:
+          action: call-service
+          service: counter.reset
+          target:
+            entity_id:
+              - counter.x1c_maintenance_carbonrods_hours
+              - counter.x1c_maintenance_carbonrods_days
+          data: {}
+        hold_action:
+          action: none
+        double_tap_action:
+          action: none
+      - type: custom:mushroom-template-card
+        primary: Y-Achse und Z-Achse Linearstangen und Belt
+        secondary: >-
+          {% if (states('counter.x1c_maintenance_yzrods_hours') | float(0) >
+          states('input_number.x1c_maintenance_yzrods_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_yzrods_days') |
+          float(0) | round(0) | round(0) >
+          states('input_number.x1c_maintenance_yzrods_interval_days') |
+          float(0) | round(0)) %}
+            REINIGUNG ERFORDERLICH ({{ states('counter.x1c_maintenance_yzrods_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_yzrods_days') | float(0) | round(0) }} Tage)
+          {% else %}
+            {{ states('counter.x1c_maintenance_yzrods_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_yzrods_days') | float(0) | round(0) }} Tage seit letzter Reinigung
+          {% endif %}Timer zurücksetzen
+        icon: mdi:wrench-clock
+        icon_color: >-
+          {% if (states('counter.x1c_maintenance_yzrods_hours') | float(0) >
+          states('input_number.x1c_maintenance_yzrods_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_yzrods_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_yzrods_interval_days') |
+          float(0) | round(0)) %}
+            red
+          {% else %}
+            green
+          {% endif %}
+        multiline_secondary: true
+        badge_icon: >-
+          {% if (states('counter.x1c_maintenance_yzrods_hours') | float(0) >
+          states('input_number.x1c_maintenance_yzrods_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_yzrods_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_yzrods_interval_days') |
+          float(0) | round(0)) %}
+            mdi:alert-circle-outline
+          {% endif %}
+        badge_color: blue
+        layout: horizontal
+        entity: counter.x1c_maintenance_yzrods_hours
+        tap_action:
+          action: call-service
+          service: counter.reset
+          target:
+            entity_id:
+              - counter.x1c_maintenance_yzrods_hours
+              - counter.x1c_maintenance_yzrods_days
+          data: {}
+        hold_action:
+          action: none
+        double_tap_action:
+          action: none
+      - type: custom:mushroom-template-card
+        primary: Z-Spindeln schmieren
+        secondary: >-
+          {% if (states('counter.x1c_maintenance_zspindle_hours') | float(0) >
+          states('input_number.x1c_maintenance_zspindle_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_zspindle_days') |
+          float(0) | round(0) | round(0) >
+          states('input_number.x1c_maintenance_zspindle_interval_days') |
+          float(0) | round(0)) %}
+            REINIGUNG ERFORDERLICH ({{ states('counter.x1c_maintenance_zspindle_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_zspindle_days') | float(0) | round(0) }} Tage)
+          {% else %}
+            {{ states('counter.x1c_maintenance_zspindle_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_zspindle_days') | float(0) | round(0) }} Tage seit letzter Reinigung
+          {% endif %}Timer zurücksetzen
+        icon: mdi:wrench-clock
+        icon_color: >-
+          {% if (states('counter.x1c_maintenance_zspindle_hours') | float(0) >
+          states('input_number.x1c_maintenance_zspindle_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_zspindle_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_zspindle_interval_days') |
+          float(0) | round(0)) %}
+            red
+          {% else %}
+            green
+          {% endif %}
+        multiline_secondary: true
+        badge_icon: >-
+          {% if (states('counter.x1c_maintenance_zspindle_hours') | float(0) >
+          states('input_number.x1c_maintenance_zspindle_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_zspindle_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_zspindle_interval_days') |
+          float(0) | round(0)) %}
+            mdi:alert-circle-outline
+          {% endif %}
+        badge_color: blue
+        layout: horizontal
+        entity: counter.x1c_maintenance_zspindle_hours
+        tap_action:
+          action: call-service
+          service: counter.reset
+          target:
+            entity_id:
+              - counter.x1c_maintenance_zspindle_hours
+              - counter.x1c_maintenance_zspindle_days
+          data: {}
+        hold_action:
+          action: none
+        double_tap_action:
+          action: none
+      - type: custom:mushroom-template-card
+        primary: Drucker reinigen
+        secondary: >-
+          {% if (states('counter.x1c_maintenance_maindevice_hours') | float(0)
+          > states('input_number.x1c_maintenance_maindevice_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_maindevice_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_maindevice_interval_days') |
+          float(0) | round(0)) %}
+            REINIGUNG ERFORDERLICH ({{ states('counter.x1c_maintenance_maindevice_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_maindevice_days') | float(0) | round(0) }} Tage)
+          {% else %}
+            {{ states('counter.x1c_maintenance_maindevice_hours') | float(0) }}h / {{ states('counter.x1c_maintenance_maindevice_days') | float(0) | round(0) }} Tage seit letzter Reinigung
+          {% endif %}Timer zurücksetzen
+        icon: mdi:wrench-clock
+        icon_color: >-
+          {% if (states('counter.x1c_maintenance_maindevice_hours') | float(0)
+          > states('input_number.x1c_maintenance_maindevice_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_maindevice_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_maindevice_interval_days') |
+          float(0) | round(0)) %}
+            red
+          {% else %}
+            green
+          {% endif %}
+        multiline_secondary: true
+        badge_icon: >-
+          {% if (states('counter.x1c_maintenance_maindevice_hours') | float(0)
+          > states('input_number.x1c_maintenance_maindevice_interval_hours') |
+          float(0)) or (states('counter.x1c_maintenance_maindevice_days') |
+          float(0) | round(0) >
+          states('input_number.x1c_maintenance_maindevice_interval_days') |
+          float(0) | round(0)) %}
+            mdi:alert-circle-outline
+          {% endif %}
+        badge_color: blue
+        layout: horizontal
+        entity: counter.x1c_maintenance_maindevice_hours
+        tap_action:
+          action: call-service
+          service: counter.reset
+          target:
+            entity_id:
+              - counter.x1c_maintenance_maindevice_hours
+              - counter.x1c_maintenance_maindevice_days
+          data: {}
+        hold_action:
+          action: none
+        double_tap_action:
+          action: none
+  - type: grid
+    cards:
+      - type: heading
+        heading: Steuerung
+      - type: custom:mushroom-title-card
+        title: Schalter
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: custom:mushroom-entity-card
+        entity: switch.tasmota
+        name: Power
+        icon_color: green
+        layout: horizontal
+        hold_action:
+          action: none
+        double_tap_action:
+          action: none
+        icon: mdi:power
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+        card:
+          type: custom:mushroom-light-card
+          entity: light.x1c_chamber_light
+          icon: mdi:lightbulb-outline
+          name: Bauraumbeleuchtung
+          use_light_color: false
+          fill_container: true
+          layout: horizontal
+      - type: custom:mushroom-title-card
+        title: Druck
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: conditional
+        conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state_not: "on"
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: offline
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unavailable
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unknown
+        card:
+          type: custom:mushroom-template-card
+          primary: Drucker ist ausgeschaltet
+          secondary: ""
+          icon: ""
+          layout: horizontal
+          tap_action:
+            action: none
+          hold_action:
+            action: none
+          double_tap_action:
+            action: none
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unavailable
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unknown
+        card:
+          type: vertical-stack
+          cards:
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: sensor.x1c_print_status
+                  state_not: pause
+                - condition: state
+                  entity: sensor.x1c_print_status
+                  state_not: running
+              card:
+                type: custom:mushroom-template-card
+                primary: Keine Kontrollen verfügbar
+                secondary: ""
+                icon: ""
+                layout: horizontal
+                tap_action:
+                  action: none
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: sensor.x1c_print_status
+                  state: running
+              card:
+                type: custom:mushroom-select-card
+                entity: select.x1c_printing_speed
+                fill_container: false
+                name: Druckgeschwindigkeit
+                secondary_info: none
+                layout: horizontal
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: sensor.x1c_print_status
+                  state: running
+              card:
+                type: custom:mushroom-entity-card
+                entity: button.x1c_pause_printing
+                name: Druckvorgang anhalten
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                layout: horizontal
+            - type: conditional
+              conditions:
+                - condition: or
+                  conditions:
+                    - condition: state
+                      entity: sensor.x1c_print_status
+                      state: pause
+                    - condition: state
+                      entity: sensor.x1c_print_status
+                      state: running
+              card:
+                type: custom:mushroom-entity-card
+                name: Druckvorgang beenden
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                layout: horizontal
+                entity: button.x1c_stop_printing
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: sensor.x1c_print_status
+                  state: pause
+              card:
+                type: custom:mushroom-entity-card
+                name: Druckvorgang fortsetzen
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                layout: horizontal
+                entity: button.x1c_resume_printing
+      - type: custom:mushroom-title-card
+        title: Lüfter
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: conditional
+        conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state_not: "on"
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: offline
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unavailable
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unknown
+        card:
+          type: custom:mushroom-template-card
+          primary: Drucker ist ausgeschaltet
+          secondary: ""
+          icon: ""
+          layout: horizontal
+          tap_action:
+            action: none
+          hold_action:
+            action: none
+          double_tap_action:
+            action: none
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unavailable
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unknown
+        card:
+          type: vertical-stack
+          cards:
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: fan.x1c_aux_fan
+                  state_not: unavailable
+                - condition: state
+                  entity: sensor.x1c_aux_fan
+                  state_not: unknown
+              card:
+                type: custom:mushroom-fan-card
+                entity: fan.x1c_aux_fan
+                layout: horizontal
+                fill_container: true
+                name: Aux Fan
+                icon_animation: true
+                collapsible_controls: true
+                show_percentage_control: true
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: fan.x1c_chamber_fan
+                  state_not: unavailable
+                - condition: state
+                  entity: sensor.x1c_chamber_fan
+                  state_not: unknown
+              card:
+                type: custom:mushroom-fan-card
+                entity: fan.x1c_chamber_fan
+                layout: horizontal
+                fill_container: true
+                name: Chamber Fan
+                icon_animation: true
+                collapsible_controls: true
+                show_percentage_control: true
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: fan.x1c_cooling_fan
+                  state_not: unavailable
+                - condition: state
+                  entity: sensor.x1c_cooling_fan
+                  state_not: unknown
+              card:
+                type: custom:mushroom-fan-card
+                entity: fan.x1c_cooling_fan
+                layout: horizontal
+                fill_container: true
+                name: Part Cooling Fan
+                icon_animation: true
+                collapsible_controls: true
+                show_percentage_control: true
+  - type: grid
+    cards:
+      - type: heading
+        heading: Status
+      - type: custom:mushroom-title-card
+        title: Bambu X1C
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: vertical-stack
+        cards:
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state: "on"
+              - condition: state
+                entity: sensor.x1c_print_status
+                state_not: offline
+              - condition: state
+                entity: sensor.x1c_print_status
+                state_not: unavailable
+              - condition: state
+                entity: sensor.x1c_print_status
+                state_not: unknown
+              - condition: state
+                entity: binary_sensor.x1c_hms_errors
+                state: "on"
+            card:
+              type: custom:mushroom-template-card
+              primary: >-
+                {% set errorMessage =
+                state_attr('binary_sensor.x1c_hms_errors','1-Error') %} {% set
+                alertLevel = errorMessage[14:] %} {% set alertLevel =
+                alertLevel[:4] %} {% if alertLevel == '0002' %} Warnung {% elif
+                alertLevel == '0003' %} Information {% else %} Fehler erkannt!
+                {% endif %}
+              secondary: |-
+                {{ state_attr('binary_sensor.x1c_hms_errors','1-Error') }}
+
+                {{ state_attr('binary_sensor.x1c_hms_errors','1-Wiki') }}
+              icon: >-
+                {% set errorMessage =
+                state_attr('binary_sensor.x1c_hms_errors','1-Error') %} {% set
+                alertLevel = errorMessage[14:] %} {% set alertLevel =
+                alertLevel[:4] %} {% if alertLevel == '0002' %} mdi:alert-circle
+                {% elif alertLevel == '0003' %} mdi:information {% else %}
+                mdi:alert {% endif %}
+              layout: horizontal
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+              double_tap_action:
+                action: none
+              entity: binary_sensor.x1c_hms_errors
+              icon_color: white
+              multiline_secondary: true
+              card_mod:
+                style: |
+                  ha-card {
+                    {% set errorMessage = state_attr('binary_sensor.x1c_hms_errors','1-Error') %}
+                    {% set alertLevel = errorMessage[14:] %}
+                    {% set alertLevel = alertLevel[:4] %}
+                    {% if alertLevel == '0002' %}
+                    background-color: rgba(255,152,0,0.5);
+                    {% elif alertLevel == '0003' %}
+                    background-color: rgba(33, 150, 243,0.5);
+                    {% else %}
+                    background-color: #770000;
+                    {% endif %}
+                  }
+          - type: custom:stack-in-card
+            mode: vertical
+            cards:
+              - type: conditional
+                conditions:
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity: switch.tasmota
+                        state_not: "on"
+                      - condition: state
+                        entity: sensor.x1c_print_status
+                        state: offline
+                      - condition: state
+                        entity: sensor.x1c_print_status
+                        state: unavailable
+                      - condition: state
+                        entity: sensor.x1c_print_status
+                        state: unknown
+                card:
+                  type: picture-elements
+                  elements: []
+                  card_mod:
+                    style: |
+                      ha-card {
+                        background: none !important;
+                        border: none !important; 
+                        box-shadow: none !important;
+                        padding: 60px
+                      }
+                  image: /api/image/serve/51852debfadd2e215c16d80a8ac4ed63/512x512
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: switch.tasmota
+                    state: "on"
+                  - condition: state
+                    entity: sensor.x1c_print_status
+                    state_not: offline
+                  - condition: state
+                    entity: sensor.x1c_print_status
+                    state_not: unavailable
+                  - condition: state
+                    entity: sensor.x1c_print_status
+                    state_not: unknown
+                card:
+                  type: picture-elements
+                  elements:
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_aux_fan_speed
+                          state_not: unavailable
+                      elements:
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_aux_fan_speed
+                              below: 1
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_aux_fan_speed
+                              title: Aux Fan
+                              style:
+                                top: "-6%"
+                                left: 14%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/fca676b64f3459e2c0e42c6e798ba78f/512x512
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_aux_fan_speed
+                              above: 0
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_aux_fan_speed
+                              title: Aux Fan
+                              style:
+                                top: "-6%"
+                                left: 14%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/42dfa9744cadae9d07f7ea5aff3bdda6/512x512
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_cooling_fan_speed
+                          state_not: unavailable
+                      elements:
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_cooling_fan_speed
+                              below: 1
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_cooling_fan_speed
+                              title: Part Cooling Fan
+                              style:
+                                top: "-6%"
+                                left: 45%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/fca676b64f3459e2c0e42c6e798ba78f/512x512
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_cooling_fan_speed
+                              above: 0
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_cooling_fan_speed
+                              title: Part Cooling Fan
+                              style:
+                                top: "-6%"
+                                left: 45%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/42dfa9744cadae9d07f7ea5aff3bdda6/512x512
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_chamber_fan_speed
+                          state_not: unavailable
+                      elements:
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_chamber_fan_speed
+                              below: 1
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_chamber_fan_speed
+                              title: Chamber Fan
+                              style:
+                                top: 106%
+                                left: 17%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/fca676b64f3459e2c0e42c6e798ba78f/512x512
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_chamber_fan_speed
+                              above: 0
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_chamber_fan_speed
+                              title: Chamber Fan
+                              style:
+                                top: 106%
+                                left: 17%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/42dfa9744cadae9d07f7ea5aff3bdda6/512x512
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_nozzle_temperature
+                          state_not: unavailable
+                      elements:
+                        - entity: sensor.x1c_nozzle_temperature
+                          type: state-badge
+                          title: Nozzletemperatur
+                          style:
+                            top: 45%
+                            left: 100%
+                            font-size: 0.8em
+                            color: rgba(0,0,0,0)
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_bed_temperature
+                          state_not: unavailable
+                      elements:
+                        - entity: sensor.x1c_bed_temperature
+                          type: state-badge
+                          title: Druckbetttemperatur
+                          style:
+                            top: 0%
+                            left: 30%
+                            font-size: 0.8em
+                            color: rgba(0,0,0,0)
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_chamber_temperature
+                          state_not: unavailable
+                      elements:
+                        - entity: sensor.x1c_chamber_temperature
+                          type: state-badge
+                          title: Bauraumtemperatur
+                          style:
+                            font-size: 0.8em
+                            top: 110%
+                            left: 40%
+                            color: rgba(0,0,0,0)
+                  card_mod:
+                    style: |
+                      ha-card {
+                        background: none !important;
+                        border: none !important; 
+                        box-shadow: none !important;
+                        padding: 60px
+                      }
+                  image: /api/image/serve/5c3e11d16962fd9a65e0b5c2b7e74427/512x512
+        grid_options:
+          columns: 12
+          rows: auto
+      - type: custom:mushroom-title-card
+        title: AMS
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: custom:stack-in-card
+        mode: vertical
+        cards:
+          - type: conditional
+            conditions:
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity: switch.tasmota
+                    state_not: "on"
+                  - condition: state
+                    entity: sensor.x1c_print_status
+                    state: offline
+                  - condition: state
+                    entity: sensor.x1c_print_status
+                    state: unavailable
+                  - condition: state
+                    entity: sensor.x1c_print_status
+                    state: unknown
+            card:
+              type: picture-elements
+              elements: []
+              card_mod:
+                style: |
+                  ha-card {
+                    background: none !important;
+                    border: none !important; 
+                    box-shadow: none !important;
+                    padding: 60px
+                  }
+              image: /api/image/serve/62c5472937edc54a7fa937e11841d6ff/512x512
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state: "on"
+              - condition: state
+                entity: sensor.x1c_print_status
+                state_not: offline
+              - condition: state
+                entity: sensor.x1c_print_status
+                state_not: unavailable
+              - condition: state
+                entity: sensor.x1c_print_status
+                state_not: unknown
+            card:
+              type: picture-elements
+              variables:
+                current_active_slot: /api/image/serve/0a59873efa8161659bf2770f76bd13a4/512x512
+              elements:
+                - type: conditional
+                  conditions:
+                    - entity: sensor.x1c_print_status
+                      state_not: offline
+                  elements:
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_ams_1_humidity_index
+                          state_not: unavailable
+                      elements:
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_ams_1_humidity_index
+                              below: 1
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_ams_1_humidity_index
+                              title: Feuchtigkeitsindex
+                              style:
+                                top: 13%
+                                left: 3%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/c4188b1df3a84478dfd5b06795bf2fd8/512x512
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_ams_1_humidity_index
+                              above: 0
+                              below: 2
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_ams_1_humidity_index
+                              title: Feuchtigkeitsindex
+                              style:
+                                top: 13%
+                                left: 3%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/33f8494349f6593017c776c2a63238b8/512x512
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_ams_1_humidity_index
+                              above: 1
+                              below: 3
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_ams_1_humidity_index
+                              title: Feuchtigkeitsindex
+                              style:
+                                top: 13%
+                                left: 3%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/662a998ca884f6657cd4460f8fa17a1a/512x512
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_ams_1_humidity_index
+                              above: 2
+                              below: 4
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_ams_1_humidity_index
+                              title: Feuchtigkeitsindex
+                              style:
+                                top: 13%
+                                left: 3%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/5199a93cbc3c7dfa6c312ab96891935a/512x512
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_ams_1_humidity_index
+                              above: 3
+                              below: 5
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_ams_1_humidity_index
+                              title: Feuchtigkeitsindex
+                              style:
+                                top: 13%
+                                left: 3%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/b36f9ab35d67d9ac8773429d852978b8/512x512
+                        - type: conditional
+                          conditions:
+                            - condition: numeric_state
+                              entity: sensor.x1c_ams_1_humidity_index
+                              above: 4
+                          elements:
+                            - type: image
+                              entity: sensor.x1c_ams_1_humidity_index
+                              title: Feuchtigkeitsindex
+                              style:
+                                top: 13%
+                                left: 3%
+                                font-size: 0.8em
+                                color: rgba(0,0,0,0)
+                              image: >-
+                                /api/image/serve/6398a5ec8b363851d67e3c88332b07fb/512x512
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_ams_1_ams_temperature
+                          state_not: unavailable
+                      elements:
+                        - entity: sensor.x1c_ams_1_ams_temperature
+                          type: state-badge
+                          title: AMS Temperatur
+                          style:
+                            top: 100%
+                            left: 100%
+                            font-size: 0.8em
+                            color: rgba(0,0,0,0)
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_ams_1_tray_1
+                          state_not: unavailable
+                      elements:
+                        - entity: sensor.x1c_ams_1_tray_1
+                          type: state-label
+                          title: Slot 1
+                          attribute: type
+                          style:
+                            top: "-7%"
+                            left: 23%
+                            width: var(--ha-label-badge-size,3em)
+                            height: var(--ha-label-badge-size,3em)
+                            overflow: hidden
+                            line-height: 2.1em
+                            text-align: center
+                            border: var(--slotactive1Border)
+                            border-radius: 50%
+                            background-color: var(--slotcolor1)
+                            text-shadow: "1px 1px 1px #000, 1px 1px 1px #000"
+                            display: flex
+                            justify-content: center
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_ams_1_tray_2
+                          state_not: unavailable
+                      elements:
+                        - entity: sensor.x1c_ams_1_tray_2
+                          type: state-label
+                          title: Slot 2
+                          attribute: type
+                          style:
+                            top: "-2%"
+                            left: 37%
+                            width: var(--ha-label-badge-size,3em)
+                            height: var(--ha-label-badge-size,3em)
+                            overflow: hidden
+                            line-height: 2.1em
+                            text-align: center
+                            border: var(--slotactive2Border)
+                            border-radius: 50%
+                            background-color: var(--slotcolor2)
+                            text-shadow: "1px 1px 1px #000, 1px 1px 1px #000"
+                            display: flex
+                            justify-content: center
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_ams_1_tray_3
+                          state_not: unavailable
+                      elements:
+                        - entity: sensor.x1c_ams_1_tray_3
+                          type: state-label
+                          title: Slot 3
+                          attribute: type
+                          style:
+                            top: 3%
+                            left: 51%
+                            width: var(--ha-label-badge-size,3em)
+                            height: var(--ha-label-badge-size,3em)
+                            overflow: hidden
+                            line-height: 2.1em
+                            text-align: center
+                            border: var(--slotactive3Border)
+                            border-radius: 50%
+                            background-color: var(--slotcolor3)
+                            text-shadow: "1px 1px 1px #000, 1px 1px 1px #000"
+                            display: flex
+                            justify-content: center
+                    - type: conditional
+                      conditions:
+                        - entity: sensor.x1c_ams_1_tray_4
+                          state_not: unavailable
+                      elements:
+                        - entity: sensor.x1c_ams_1_tray_4
+                          type: state-label
+                          title: Slot 4
+                          attribute: type
+                          style:
+                            top: 9%
+                            left: 66%
+                            width: var(--ha-label-badge-size,3em)
+                            height: var(--ha-label-badge-size,3em)
+                            overflow: hidden
+                            line-height: 2.1em
+                            text-align: center
+                            border: var(--slotactive4Border)
+                            border-radius: 50%
+                            mix-blend-mode: difference
+                            background-color: var(--slotcolor4)
+                            text-shadow: "1px 1px 1px #000, 1px 1px 1px #000"
+                            display: flex
+                            justify-content: center
+              card_mod:
+                style: |
+                  ha-card {
+                    background-size: contain !important;
+                    background-repeat: no-repeat !important;
+                    background-origin: content-box !important;
+                    border: none !important; 
+                    box-shadow: none !important;
+                    padding: 60px;          
+                    --slotcolor1: {{ state_attr('sensor.x1c_ams_1_tray_1', 'color') }};
+                    --slotcolor2: {{ state_attr('sensor.x1c_ams_1_tray_2', 'color') }};
+                    --slotcolor3: {{ state_attr('sensor.x1c_ams_1_tray_3', 'color') }};
+                    --slotcolor4: {{ state_attr('sensor.x1c_ams_1_tray_4', 'color') }};
+                    {%- set activeSlotSensor1 = state_attr('sensor.x1c_ams_1_tray_1', 'active') %}
+                    {%- set activeSlotSensor2 = state_attr('sensor.x1c_ams_1_tray_2', 'active') %}
+                    {%- set activeSlotSensor3 = state_attr('sensor.x1c_ams_1_tray_3', 'active') %}
+                    {%- set activeSlotSensor4 = state_attr('sensor.x1c_ams_1_tray_4', 'active') %}
+                    {%- if activeSlotSensor1 == true %}
+                    --slotactive1Border: .3em solid #11739D;
+                    {%- else %}
+                    --slotactive1Border: .1em solid #aaaaaa;
+                    {%- endif %}
+                    {%- if activeSlotSensor2 == true %}
+                    --slotactive2Border: .3em solid #11739D;
+                    {%- else %}
+                    --slotactive2Border: .1em solid #aaaaaa;
+                    {%- endif %}
+                    {%- if activeSlotSensor3 == true %}
+                    --slotactive3Border: .3em solid #11739D;
+                    {%- else %}
+                    --slotactive3Border: .1em solid #aaaaaa;
+                    {%- endif %}
+                    {%- if activeSlotSensor4 == true %}
+                    --slotactive4Border: .3em solid #11739D;
+                    {%- else %}
+                    --slotactive4Border: .1em solid #aaaaaa;
+                    {%- endif %}
+                    {%- if activeSlotSensor1 == true %}
+                    background-image: url(/api/image/serve/3da6ff4e7a50875d2752fdc2415357fe/512x512) !important;
+                    {%- elif activeSlotSensor2 == true %}
+                    background-image: url(/api/image/serve/3c1cfed40213232684563cfc7438a2cb/512x512) !important;
+                    {%- elif activeSlotSensor3 == true %}
+                    background-image: url(/api/image/serve/d44bac07fce942ef7925e56ca3f56bec/512x512) !important;
+                    {%- elif activeSlotSensor4 == true %}
+                    background-image: url(/api/image/serve/99521a1da5d818955ee6ecac04207680/512x512) !important;
+                    {%- else %}
+                    background-image: url(/api/image/serve/0a59873efa8161659bf2770f76bd13a4/512x512) !important;
+                    {%- endif %}
+                  }
+              image: /api/image/serve/8fb6bd5b48414712bae1b16726f146fb/512x512
+      - type: custom:mushroom-title-card
+        title: Externe Spule
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: conditional
+        conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state_not: "on"
+              - condition: state
+                entity: binary_sensor.x1c_online
+                state_not: "on"
+        card:
+          type: custom:mushroom-template-card
+          primary: Drucker ist ausgeschaltet
+          secondary: ""
+          icon: ""
+          layout: horizontal
+          tap_action:
+            action: none
+          hold_action:
+            action: none
+          double_tap_action:
+            action: none
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unavailable
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unknown
+        card:
+          type: vertical-stack
+          cards:
+            - type: conditional
+              conditions:
+                - condition: or
+                  conditions:
+                    - condition: state
+                      entity: sensor.x1c_externalspool_external_spool
+                      state: unavailable
+                    - condition: state
+                      entity: sensor.x1c_externalspool_external_spool
+                      state: unknown
+              card:
+                type: custom:mushroom-template-card
+                primary: Externe Spule nicht verfügbar
+                secondary: ""
+                icon: ""
+                layout: horizontal
+                tap_action:
+                  action: none
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: sensor.x1c_externalspool_external_spool
+                  state_not: unavailable
+                - condition: state
+                  entity: sensor.x1c_externalspool_external_spool
+                  state_not: unknown
+              card:
+                type: picture-elements
+                elements:
+                  - entity: sensor.x1c_externalspool_external_spool
+                    type: state-label
+                    title: Externe Spule
+                    attribute: type
+                    style:
+                      top: "0"
+                      left: 26%
+                      width: var(--ha-label-badge-size,3em)
+                      height: var(--ha-label-badge-size,3em)
+                      overflow: hidden
+                      line-height: 2.1em
+                      text-align: center
+                      border: .3em solid
+                      border-color: "#11739D"
+                      border-radius: 50%
+                      background-color: var(--slotcolor)
+                      text-shadow: "1px 1px 1px #000, 1px 1px 1px #000"
+                      display: flex
+                      justify-content: center
+                card_mod:
+                  style: |
+                    ha-card {
+                      padding-left: 5em;
+                      padding-right: 5em;
+                      padding-top: 5em;
+                      padding-bottom: 1em;
+                      --slotcolor: {{ state_attr('sensor.x1c_externalspool_external_spool', 'color') }};
+                    }
+                image: /api/image/serve/5e1d6bb4e550082cf5eabdd26624cfa3/512x512
+  - type: grid
+    cards:
+      - type: heading
+        heading: Sensoren
+      - type: custom:mushroom-title-card
+        title: Nozzle
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unavailable
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unknown
+        card:
+          type: entities
+          entities:
+            - entity: sensor.x1c_nozzle_type
+              name: Typ
+              icon: mdi:printer-3d-nozzle-outline
+            - entity: sensor.x1c_nozzle_size
+              name: Größe
+              icon: mdi:printer-3d-nozzle-alert-outline
+            - entity: sensor.x1c_nozzle_temperature
+              name: Ist Temperatur
+              icon: mdi:printer-3d-nozzle-heat-outline
+            - entity: sensor.x1c_nozzle_target_temperature
+              name: Soll Temperatur
+              icon: mdi:printer-3d-nozzle-heat
+      - type: conditional
+        conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state_not: "on"
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: offline
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unavailable
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unknown
+        card:
+          type: custom:mushroom-template-card
+          primary: Drucker ist ausgeschaltet
+          secondary: ""
+          icon: ""
+          layout: horizontal
+          tap_action:
+            action: none
+          hold_action:
+            action: none
+          double_tap_action:
+            action: none
+      - type: custom:mushroom-title-card
+        title: Bed
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unavailable
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unknown
+        card:
+          type: entities
+          entities:
+            - entity: sensor.x1c_print_bed_type
+              icon: mdi:bed-outline
+              name: Typ
+            - entity: sensor.x1c_bed_temperature
+              name: Ist Temperatur
+            - entity: sensor.x1c_bed_target_temperature
+              name: Soll Temperatur
+              icon: mdi:thermometer-high
+      - type: conditional
+        conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state_not: "on"
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: offline
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unavailable
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unknown
+        card:
+          type: custom:mushroom-template-card
+          primary: Drucker ist ausgeschaltet
+          secondary: ""
+          icon: ""
+          layout: horizontal
+          tap_action:
+            action: none
+          hold_action:
+            action: none
+          double_tap_action:
+            action: none
+      - type: custom:mushroom-title-card
+        title: Diagnose
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: switch.tasmota
+            state: "on"
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: offline
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unavailable
+          - condition: state
+            entity: sensor.x1c_print_status
+            state_not: unknown
+        card:
+          type: entities
+          entities:
+            - entity: binary_sensor.x1c_enclosure_door
+              name: Tür
+            - entity: binary_sensor.x1c_firmware_update
+              name: Firmware
+              icon: ""
+            - entity: binary_sensor.x1c_hms_errors
+              name: Fehler
+              icon: mdi:alert-circle-check-outline
+            - entity: sensor.x1c_total_usage
+              name: Gesamtnutzung
+            - entity: binary_sensor.x1c_online
+              name: MakerWorld Verbindung
+              icon: mdi:cast-connected
+            - entity: sensor.x1c_wi_fi_signal
+              name: Wi-Fi Signal
+      - type: conditional
+        conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity: switch.tasmota
+                state_not: "on"
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: offline
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unavailable
+              - condition: state
+                entity: sensor.x1c_print_status
+                state: unknown
+        card:
+          type: custom:mushroom-template-card
+          primary: Drucker ist ausgeschaltet
+          secondary: ""
+          icon: ""
+          layout: horizontal
+          tap_action:
+            action: none
+          hold_action:
+            action: none
+          double_tap_action:
+            action: none
+      - type: custom:mushroom-title-card
+        title: Energy
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        card_mod:
+          style: |
+            ha-card {
+              h1.title {
+                font-size: medium;
+                font-weight: normal;
+              }
+            }
+      - type: vertical-stack
+        cards:
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.tasmota_energy_power
+            name: Verbrauch
+            icon: mdi:power-socket
+            unit: W
+            theme: Mushroom
+          - type: entities
+            entities:
+              - entity: sensor.tasmota_energy_voltage
+                name: Spannung
+              - entity: sensor.tasmota_energy_current
+                name: Strom
+              - entity: sensor.tasmota_energy_today
+                name: Tagesverbrauch
+                icon: mdi:meter-electric-outline
+              - entity: sensor.tasmota_energy_total
+                name: Gesamtverbrauch
+                icon: mdi:meter-electric-outline
+icon: mdi:printer-3d
+theme: Google Dark Theme
