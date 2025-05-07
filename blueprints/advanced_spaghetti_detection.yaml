@@ -7,50 +7,37 @@ blueprint:
   #   - Standard 'Failure' threshold for defined actions (Pause/Stop/Warn).
   #   - Optional 'Warning-Only' mode for notifications below main failure, without printer action.
   # - **Sophisticated Notification Control:**
-  #   - Critical/Standard/No Push options; HA Persistent Notifications.
+  #   - Critical/Standard/No Push options; Optional HA Persistent Notifications.
   #   - Snapshot inclusion, configurable cooldown, detailed print info (optional: file, progress, time, layer).
   #   - Interactive Notification Actions: Resume, Stop, and a new 'Disable Detection' (timed).
   # - **Detection Timeout Feature:** Temporarily pause detection & non-emergency alerts via notification.
   # - **Algorithm Fine-Tuning (Expert):** Optional inputs to adjust EWMA period and key threshold calculation factors.
   # - **Integrated Debug Mode:** Comprehensive testing of the notification pipeline with simulated confidence.
   #
-  name: Bambu Lab - Advanced Spaghetti Detection v1.95
+
+  name: Bambu Lab - Advanced Spaghetti Detection v1.96
   description: |
     Detects spaghetti failures for Bambu Lab printers using Obico ML API.
-    **Based on the work from:** https://github.com/nberktumer/ha-bambu-lab-p1-spaghetti-detection
 
+    **Setup Instructions & Origin:**
+    This blueprint is based on the work from nberktumer. For initial setup of Obico (formerly The Spaghetti Detective),
+    the required Home Assistant custom integration (`bambu_lab_p1_spaghetti_detection`), and the necessary number/datetime helpers,
+    please follow the instructions at: https://github.com/nberktumer/ha-bambu-lab-p1-spaghetti-detection
+    **Then, use THIS blueprint file for the advanced features.**
     **Important Setup for Timeout Feature:**
 
     To use the 'Detection Disable Timeout' functionality, you need to manually create an `input_datetime` helper in Home Assistant:
     1. Go to "Settings" > "Devices & Services" > "Helpers".
     2. Click "Add Helper" and choose "Date and/or time".
-    3. Ensure "Date and Time" is selected for the helper.
-    4. Give it a name (e.g., "Spaghetti Detection Timeout Until").
-    5. Select this newly created helper in the 'Detection Disable Datetime Helper' input field of this blueprint.
+    3. Ensure "Date and Time" is selected, give it a name (e.g., "Spaghetti Detection Timeout Until"), and select it in this blueprint.
 
     **Snapshot Setup for Notifications:**
-    This blueprint will take a camera snapshot to include in notifications.
-    1. Please ensure the directory `/config/www/snapshots/` exists in your Home Assistant configuration.
-       If it doesn't, please create it.
-    2. Snapshots will be saved by the `camera.snapshot` service to `www/snapshots/bambu_lab_spaghetti_snapshot.jpg`
-       (which corresponds to the path `/config/www/snapshots/bambu_lab_spaghetti_snapshot.jpg` on your server).
-    3. The notification will then attempt to load the image via the URL `YOUR_HA_HOST/local/snapshots/bambu_lab_spaghetti_snapshot.jpg`.
-
-    **URL Configuration for Notification Images:**
-    - The 'Home Assistant Host' input is used by default for constructing image URLs in notifications and for the Obico API call.
-    - If your 'Home Assistant Host' is an internal URL (e.g., `http://192.168.x.x:8123`), images in notifications will
-      likely only work when your phone is on your local Wi-Fi.
-    - To ensure images work externally, use the **'External Notification Host URL (Optional)'** input below to provide
-      your externally accessible Home Assistant URL (e.g., Nabu Casa URL or your own reverse proxy URL).
-      If this field is filled, it will be prioritized for notification images.
-
-    **Debug Mode:**
-    This blueprint includes a debug mode to test the notification workflow. When enabled, it will simulate
-    a detection event at a configurable interval and send a notification as if a failure was detected.
-
-    **Camera Setup Tips for Best Results:**
-    - Ensure your printer camera has a clear, well-lit, and stable view of the print bed.
-    - Good focus and consistent lighting are crucial for the ML model to perform optimally.
+    If 'Include Snapshot in Notifications' is enabled:
+    1. Ensure the directory `/config/www/snapshots/` exists.
+    2. Snapshots are saved as `www/snapshots/bambu_lab_spaghetti_snapshot.jpg`.
+    3. Image URL in notifications uses 'Home Assistant Host' or 'External Notification Host URL (Optional)' if provided
+       (e.g., `YOUR_HA_HOST/local/snapshots/bambu_lab_spaghetti_snapshot.jpg`).
+       For external access, ensure the chosen host URL is externally reachable.
 
   domain: automation
   input:
