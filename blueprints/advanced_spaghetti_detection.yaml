@@ -24,8 +24,8 @@ blueprint:
     the required Home Assistant custom integration (`bambu_lab_p1_spaghetti_detection`), and the necessary number/datetime helpers,
     please follow the instructions at: https://github.com/nberktumer/ha-bambu-lab-p1-spaghetti-detection
     **Then, use THIS blueprint file for the advanced features.**
-    **Important Setup for Timeout Feature:**
 
+    **Important Setup for Timeout Feature:**
     To use the 'Detection Disable Timeout' functionality, you need to manually create an `input_datetime` helper in Home Assistant:
     1. Go to "Settings" > "Devices & Services" > "Helpers".
     2. Click "Add Helper" and choose "Date and/or time".
