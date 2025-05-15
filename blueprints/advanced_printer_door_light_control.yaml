@@ -1,0 +1,217 @@
+blueprint:
+    # --- Advanced Printer Door Light Control - Key Features ---
+    # This blueprint offers intelligent control over your printer's chamber light,
+    # reacting to door status and various print events, ensuring the light is on
+    # when needed and off when appropriate, with safety and convenience in mind.
+    #
+    # - **Door-Activated Lighting:**
+    #   - Instantly turns the light ON when the printer enclosure door is opened.
+    #   - Turns the light OFF when the door is closed, provided the printer is confirmed
+    #     to be in an 'idle' state (configurable delay for door closed trigger).
+    # - **Print Event Integration:**
+    #   - Automatically turns the light ON when a print job starts.
+    #   - Initiates a smart turn-OFF sequence when a print finishes or is canceled.
+    # - **Smart Cooldown & Idle Logic for Light Deactivation:**
+    #   - After a print, waits for the nozzle to cool below a configurable temperature.
+    #   - Critically, requires the printer to be in an 'idle' state AND the door to be closed
+    #     before finally turning off the light, preventing premature deactivation.
+    #   - Includes a configurable maximum duration for the cooldown check.
+    # - **Comprehensive Configuration & Entity Selection:**
+    #   - User-selectable entities for all relevant sensors (door, current printer stage, nozzle temperature),
+    #     the chamber light, and the printer device itself.
+    #   - Adjustable thresholds for nozzle cooldown temperature and the door closed trigger delay.
+
+  name: Advanced Printer Door Light Control v1.6
+  description: "Controls a printer chamber light based on door status, print events, nozzle temperature, and printer current stage (idle)."
+
+
+  domain: automation
+  input:
+    # --- Device & Core Entity Settings ---
+    printer_device:
+      name: Printer Device
+      description: "Select the printer device that emits print status events (e.g., 'event_print_started', 'event_print_finished', 'event_print_canceled' from the 'bambu_lab' domain)."
+      selector:
+        device:
+    current_stage_sensor:
+      name: Current Stage Sensor
+      description: "Sensor reporting the current stage of the printer (e.g., 'idle', 'printing'). The light will only turn off when this sensor is in the 'idle' state."
+      selector:
+        entity:
+          domain: sensor
+    enclosure_door_sensor:
+      name: Enclosure Door Sensor
+      description: "Binary sensor for the enclosure door. Assumes 'on' state for open, 'off' state for closed."
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class:
+            - door
+            - opening
+    chamber_light:
+      name: Chamber Light
+      description: The light entity to control.
+      selector:
+        entity:
+          domain: light
+    nozzle_temp_sensor:
+      name: Nozzle Temperature Sensor
+      description: "Sensor reporting the nozzle temperature (e.g., in °C). Used for cooldown check."
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+    # --- Timing & Threshold Settings ---
+    door_closed_trigger_delay:
+      name: Door Closed Trigger Delay
+      description: "How long the door must be in 'closed' state before the 'door_closed' trigger fires."
+      selector:
+        number:
+          min: 0
+          max: 60
+          step: 1
+          unit_of_measurement: seconds
+          mode: slider
+      default: 1
+    cooldown_temp_threshold:
+      name: Nozzle Cooldown Temperature Threshold
+      description: "The light will turn off after a print once the nozzle cools below this temperature."
+      selector:
+        number:
+          min: 0
+          max: 200
+          step: 1
+          unit_of_measurement: "°C" # Make sure your sensor uses Celsius or adjust accordingly
+          mode: slider
+      default: 100
+    cooldown_check_max_duration:
+      name: Cooldown Check Maximum Duration
+      description: "Maximum time (in seconds) to wait for nozzle cooldown. 0 to wait indefinitely (only temperature based)."
+      selector:
+        number:
+          min: 0
+          max: 1800 # 30 minutes
+          step: 60
+          unit_of_measurement: seconds
+          mode: slider
+      default: 300 # 5 minutes
+
+# Variables for reusable conditions
+variables:
+  condition_light_is_on: &condition_light_is_on
+    condition: state
+    entity_id: !input chamber_light
+    state: 'on'
+  condition_printer_is_idle: &condition_printer_is_idle # Renamed input reflected here
+    condition: state
+    entity_id: !input current_stage_sensor
+    state: 'idle'
+  # Variables for template usage
+  _nozzle_temp_sensor_entity: !input nozzle_temp_sensor
+  _cooldown_temp_threshold_value: !input cooldown_temp_threshold
+  _cooldown_check_max_duration_value: !input cooldown_check_max_duration
+
+# Automation Mode
+mode: single
+
+triggers:
+  - platform: state
+    entity_id: !input enclosure_door_sensor # Renamed input
+    to: 'off' # Closed
+    for:
+      seconds: !input door_closed_trigger_delay
+    id: door_closed
+  - platform: state
+    entity_id: !input enclosure_door_sensor # Renamed input
+    to: 'on' # Opened
+    id: door_opened
+  - platform: device
+    device_id: !input printer_device
+    domain: bambu_lab
+    type: event_print_started
+    id: print_started
+  - platform: device
+    device_id: !input printer_device
+    domain: bambu_lab
+    type: event_print_canceled
+    id: print_canceled
+  - platform: device
+    device_id: !input printer_device
+    domain: bambu_lab
+    type: event_print_finished
+    id: print_finished
+
+actions:
+  - choose:
+      # --- Case 1: Door Opened ---
+      - conditions:
+          - condition: trigger
+            id:
+              - door_opened
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input chamber_light
+        alias: "Light ON: Door Opened"
+      # --- Case 2: Door Closed ---
+      - conditions:
+          - condition: trigger
+            id:
+              - door_closed
+          - *condition_light_is_on # Use anchor
+          - *condition_printer_is_idle # Use anchor
+        sequence:
+          - service: light.turn_off
+            target:
+              entity_id: !input chamber_light
+        alias: "Light OFF: Door Closed (No Active Print AND Printer Idle)"
+      # --- Case 3: Print Started ---
+      - conditions:
+          - condition: trigger
+            id:
+              - print_started
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input chamber_light
+        alias: "Light ON: Print Started"
+      # --- Case 4: Print Canceled or Finished (Cooldown Logic) ---
+      - conditions:
+          - condition: trigger
+            id:
+              - print_canceled
+              - print_finished
+          - *condition_light_is_on # Use anchor
+        sequence:
+          - repeat:
+              sequence:
+                - delay:
+                    seconds: 1
+                - choose:
+                    - conditions:
+                        - condition: template
+                          value_template: >-
+                            {{ states(_nozzle_temp_sensor_entity) | float(200) <= _cooldown_temp_threshold_value }}
+                      sequence:
+                        - if:
+                            - condition: state # Door is closed
+                              entity_id: !input enclosure_door_sensor # Renamed input
+                              state: 'off'
+                            - *condition_printer_is_idle # Use anchor
+                          then:
+                            - service: light.turn_off
+                              target:
+                                entity_id: !input chamber_light
+                      alias: "Cooldown: Temp OK, Door Closed & Printer Idle - Turn Light OFF"
+                # Default action in choose (if temp not yet low enough) is to do nothing and let repeat continue
+              until:
+                - condition: template
+                  value_template: >
+                    {% set temp_ok = states(_nozzle_temp_sensor_entity) | float(200) <= _cooldown_temp_threshold_value %}
+                    {% set max_duration_seconds = _cooldown_check_max_duration_value %}
+                    {% if max_duration_seconds > 0 %}
+                      {{ temp_ok or repeat.index >= max_duration_seconds }}
+                    {% else %}
+                      {{ temp_ok }}
+                    {% endif %}
+        alias: "Light OFF Logic: Print Ended (Cooldown, Door Closed & Printer Idle Check)"
